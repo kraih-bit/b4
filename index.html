@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <title>XAUUSD Backtest</title>
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-<link rel="stylesheet" href="style.css">
+<style>
+body{background:#0e0e0e;color:white;font-family:Arial;margin:0;text-align:center;}
+#chart{width:100%;height:600px;margin:auto;}
+.panel{margin:15px;}
+</style>
 </head>
 <body>
 
@@ -22,6 +26,66 @@ Speed
 
 <h3 id="profit">Profit: 0</h3>
 
-<script src="script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  const chart = LightweightCharts.createChart(document.getElementById("chart"), {
+    width: window.innerWidth,
+    height: 600,
+    layout: { background: { color: "#0e0e0e" }, textColor: "white" }
+  });
+
+  const candles = chart.addCandlestickSeries();
+
+  let index=0, timer;
+  let position=null, entry=0, profit=0;
+
+  // بيانات شموع XAUUSD داخل السكريبت
+  let data=[
+    {time:1, open:2000, high:2005, low:1995, close:2003},
+    {time:2, open:2003, high:2008, low:2001, close:2006},
+    {time:3, open:2006, high:2010, low:2004, close:2008},
+    {time:4, open:2008, high:2012, low:2007, close:2011},
+    {time:5, open:2011, high:2015, low:2009, close:2013},
+    {time:6, open:2013, high:2018, low:2010, close:2015},
+    {time:7, open:2015, high:2020, low:2012, close:2018}
+  ];
+
+  candles.setData(data);  // عرض كل الشموع عند البداية
+  index = data.length;    // إعداد index بعد عرض كل الشموع
+
+  function start(){
+    let speed=document.getElementById("speed").value;
+    let i=0;
+    timer=setInterval(()=>{
+      if(i<data.length){
+        candles.update(data[i]);
+        if(position){
+          let price=data[i].close;
+          profit = (position==="buy") ? price-entry : entry-price;
+          document.getElementById("profit").innerText="Profit: "+profit.toFixed(2);
+        }
+        i++;
+      }
+    }, speed);
+  }
+
+  function pause(){ clearInterval(timer); }
+  function buy(){ position="buy"; entry=data[data.length-1].close; }
+  function sell(){ position="sell"; entry=data[data.length-1].close; }
+
+  window.start=start;
+  window.pause=pause;
+  window.buy=buy;
+  window.sell=sell;
+
+  // إعادة ضبط حجم الشارت عند تغيير حجم النافذة
+  window.addEventListener('resize', ()=>{
+    chart.applyOptions({width: window.innerWidth});
+  });
+
+});
+</script>
+
 </body>
 </html>
